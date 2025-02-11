@@ -31,3 +31,20 @@ app.use("/api", auth);
 app.listen(3000, () => {
     console.log("Example app listening on port 3000!");
 })
+
+
+const rearrangeString = () => {
+    const input = "my name is satya";
+    
+    // Split the sentence into words
+    const words = input.split(" ");
+
+    // Rearrange the words to "satya is my name"
+
+    // console.log([...words].reverse().join(" "));
+
+    const rearranged = [words[3], words[2], words[0], words[1]].join(" ");
+    console.log(rearranged);
+};
+
+rearrangeString();

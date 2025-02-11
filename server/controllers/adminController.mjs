@@ -11,6 +11,16 @@ export const addmedicine = async(req,res)=>{
     try {
         
         const {name,price,quantity,expiryDate,gstApplicable,discount} = req.body;
+        
+         // check if mediciine already exists
+         const exist = await medicineData.findOne({ name });
+         if (exist) {
+             return res.status(400).json({
+                 error:"Medicine already exists"
+             });
+         }
+    //  const priceUpdate =  await medicineData.findByIdAndU( )
+
         const newMedicine = new medicineData({
             name,
             price,
@@ -20,8 +30,12 @@ export const addmedicine = async(req,res)=>{
             discount
         });
         
+
+
+
+
         await newMedicine.save();
-        res.status(201).json({
+       return   res.status(201).json({
             message:"Medicine Added Successfully",
             medicine:newMedicine
         })

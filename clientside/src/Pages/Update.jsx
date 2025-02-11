@@ -10,7 +10,7 @@ const Update = () => {
     price: "",
     quantity: "",
     expiryDate: "",
-    gstApplicable: false, // Use gstApplicable consistently
+    gstApplicable: true, // Use gstApplicable consistently
     discount: "10"
   });
 

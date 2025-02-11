@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const AdminPage = () => {
 
-   
+   const [query, setQuery] = useState("");
    const [token,setToken]=useState(localStorage.getItem('token'));
    const [medicines, setMedicines] = useState([]);
    const [newMedicine, setNewMedicine] = useState({
@@ -13,7 +13,7 @@ const AdminPage = () => {
       quantity: '',
       expiryDate: '',
       gstApplicable: false,
-      discount: '10'
+      discount: '20'
    });
 
    useEffect(() => {
@@ -38,20 +38,42 @@ const AdminPage = () => {
          return;
       }
 
+
+      // Apply 20% discount
+      const discountedPrice = newMedicine.price * (1 - newMedicine.discount / 100);
+      console.log(discountedPrice);
+      newMedicine.price = discountedPrice;
+
+
       //Apply GST
       const priceWithGST = newMedicine.gstApplicable ? newMedicine.price * 1.18 : newMedicine.price;
-
+      
+      
 
       try {
          const response = await axios.post('http://localhost:3000/api/addmedicine',{...newMedicine,price:priceWithGST},{headers:{token}});
-         const data = await response.json();
-         console.log(data)
+         // const data = await response.json();
+         console.log(response.data)
+
+         
+         if (response.data && response.data.message) {
+            alert(response.data.message); // This should now show
+        }
+
+        window.location.replace("/admin");
+
       } catch (error) {
          console.error('Error adding medicine:', error);
+         alert(
+            error.response?.data?.message || 
+            error.response?.data?.error || 'An error occurred while adding medicine. Please try again.'
+         )
       }
    };
 
    const deleteMedicine = async (id) => {
+
+      const confirmation = window.confirm('Are you sure you want to delete this medicine?');
       if (confirmation) {
          try {
             const response = await fetch(`http://localhost:3000/api/deleteMedicine/${id}`,{
@@ -70,7 +92,15 @@ const AdminPage = () => {
    };
 
 
-   
+
+   // const  fuunc1 =()=>{
+   //    const input = "my name is satyaranjan";
+   //    const word = input.split('');
+   //    const  results = word.slice(3).concat(word.slice(1,3)).join(" ");
+   //    console.log(results);
+   // }
+
+   // fuunc1()
 
    return token ? (
       <div className="min-h-screen bg-gray-100">
@@ -139,6 +169,12 @@ const AdminPage = () => {
             {/* Medicine List */}
             <div className="bg-white p-6 rounded-lg shadow-md">
                <h2 className="text-2xl font-semibold mb-4">Medicine List</h2>
+               <input
+            type="text"
+            className="p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500"
+            onChange={(e) => setQuery(e.target.value.toUpperCase())}
+            placeholder="Search Medicine"
+          />
                {medicines.length === 0 ? (
                   <p>No medicines available</p>
                ) : (
@@ -154,12 +190,14 @@ const AdminPage = () => {
                         </tr>
                      </thead>
                      <tbody>
-                        {medicines.map((medicine) => (
+                     { medicines.filter((medicine) =>
+        medicine.name.toUpperCase().includes(query)
+      ).map((medicine) => (
                            <tr key={medicine._id}>
                               <td className="px-4 py-2">{medicine.name}</td>
                               <td className="px-4 py-2">{medicine.price}</td>
                               <td className="px-4 py-2">{medicine.quantity}</td>
-                              <td className="px-4 py-2">{medicine.expiryDate}</td>
+                              <td className="px-4 py-2">{new Date(medicine.expiryDate).toLocaleDateString('en-CA')}</td>
                               <td className="px-4 py-2">{medicine.gstApplicable ? "18%" : 'N/A'}</td>
                               <td className="px-4 py-2 flex gap-2">
                                  <button
@@ -168,9 +206,10 @@ const AdminPage = () => {
                                  >
                                     Delete
                                  </button>
+                                 </td>
+                                 <td>
                                  <Link to={`/update/${medicine._id}`}>
                                  <button
-                                    onClick={() => deleteMedicine(medicine._id)}
                                     className="text-red-600 hover:text-red-800 border  border-black p-1 rounded"
                                  >
                                     Update
